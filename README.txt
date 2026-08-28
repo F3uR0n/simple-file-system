@@ -12,25 +12,22 @@ Group Members:
 
 
 Compilation
-----------------------
+--------------------------------------------------
 gcc -Wall -Wextra -std=c11 simplefs_builder.c -o simplefs_builder
 gcc -Wall -Wextra -std=c11 simplefs_adder.c -o simplefs_adder
 
 
 
 Execution
-----------------------
+--------------------------------------------------
 
 To create a new SimpleFS image:
-
 	./simplefs_builder --image disk.img
 
 To add a file to the image:
-
 	./simplefs_adder --input disk.img --file test1.txt
 
 Additional files can be added using:
-
 	./simplefs_adder --input disk.img --file test2.txt
 	./simplefs_adder --input disk.img --file test3.txt
 
@@ -39,21 +36,23 @@ Additional files can be added using:
 Implementation Description
 --------------------------------------------------
 
-simplefs_builder.c creates a 262144-byte (64-block, 4096 bytes/block) SimpleFS image and initializes it: writes the superblock to Block 0, sets bit 0 in the inode bitmap (Block 1) and data bitmap (Block 2) to mark the root inode and root data block as allocated, writes the root inode (type=directory, links=2, size=128, direct[0]=4) to Block 3, and writes the "." and ".." directory entries to Block 4.
+In the simplefs_builder.c file we have created simplefs disk.img (file six 262144 bytes) with 64 blocks where each block size is 4096.From the 64 block Block 0 is occupied for superblock, the others are for inode bitmap, data bitmap, inode block and data block.
 
-simplefs_adder.c adds a regular file from the current working directory into an existing image. It validates the image's magic number, rejects files over 12288 bytes or names over 58 characters, computes the number of 4096-byte blocks needed (ceil(file_size / BLOCK_SIZE)), rejects duplicate file names by scanning the root directory, then uses first-fit allocation over the inode bitmap and data bitmap to find a free inode and the required number of free data blocks. It copies the source file's contents into the allocated blocks (zero-padding the final partial block), writes a new inode with the correct direct pointers, marks the inode/data bitmaps, adds a directory entry mapping the file name to the new inode number, and increases the root inode's size by 64 bytes (sizeof(dirent_t)).
+On the other hand, in simplefs_adder.c we had implemented programs which support to add files in the image file.In this file we completed the codes which handle many function duplicate filename cannot be entered, verifies file size limits, allocation free or not of both inode and data from inode bit mape and data bit map, updates bit map allocation status and so on.And this helps to handle some error case like invalid arguments, missing files, invalid filesystem, unavailable data block or inode etc.
 
 
 
 Contribution of Each Member
 --------------------------------------------------
-Farhan Sadik: [e.g., simplefs_builder.c — superblock, bitmaps, root inode/entries]
-Md Sahin Alam: [e.g., simplefs_adder.c — allocation, file copy, directory update]
-Rubyeat Wadud Galpa: [e.g., testing with xxd/hexdump, README, edge cases]
+Farhan Sadik: simplefs_builder.c — TODO 1–3, simplefs_adder.c — TODO 7–9
+Md Sahin Alam: simplefs_adder.c — TODO 1–6
+Rubyeat Wadud Galpa: simplefs_builder.c — TODO 4–6, simplefs_adder.c — TODO 10–11
 
 
 
 Known Limitations / Problems
 --------------------------------------------------
-- No support for subdirectories, file deletion, renaming, or links (by design, per project spec).
-- Maximum of 31 user files (32 inodes − 1 for root) and 12288-byte max file size, both fixed by the SimpleFS parameters.
+- No support for subdirectories.
+- No support for file deletion.
+- No support for renaming.
+- Maximum of 31 user files (32 inodes − 1 for root) and 12288-byte max file size.
